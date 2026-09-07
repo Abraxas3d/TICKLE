@@ -197,10 +197,23 @@ def main():
     qso_hours = []
     try:
         qc = sqlite3.connect(a.qso_db)
-        for (ts,) in qc.execute(
-            "SELECT DISTINCT ts FROM qsos WHERE band_ghz BETWEEN 9.5 AND 11 "
-            "AND ts LIKE ? AND lat1 IS NOT NULL", (a.date + "%",)):
-            qso_hours.append(int(ts[11:13]) + int(ts[14:16])/60)
+        def _soc(la, lo): return 32.0 <= la <= 34.5 and -118.5 <= lo <= -115.8
+        def _azd(la, lo): return 31.5 <= la <= 35.5 and -115.8 <= lo <= -110.5
+        seen = set()
+        for ts, la1, lo1, la2, lo2, c1, c2 in qc.execute(
+            "SELECT ts, lat1, lon1, lat2, lon2, call1, call2 FROM qsos "
+            "WHERE band_ghz BETWEEN 9.5 AND 11 AND ts LIKE ? "
+            "AND lat1 IS NOT NULL AND lat2 IS NOT NULL", (a.date + "%",)):
+            if not ((_soc(la1, lo1) and _azd(la2, lo2)) or
+                    (_soc(la2, lo2) and _azd(la1, lo1))):
+                continue
+            key = (ts, tuple(sorted((c1, c2))))
+            if key in seen:
+                continue
+            seen.add(key)
+            h = int(ts[11:13]) + int(ts[14:16]) / 60
+            if a.start <= h <= a.end:
+                qso_hours.append(h)
     except sqlite3.OperationalError as e:
         print(f"(QSO overlay skipped: {e})")
 
