@@ -59,6 +59,7 @@ HORIZON_RANGE_M = 150e3           # terrain farther than this can't raise mask
 AZ_STEP_DEG = 0.5
 RANGE_STEP_M = 200.0
 GRID = dict(lat0=31.0, lat1=36.0, lon0=-118.6, lon1=-110.4, step=0.05)
+DEFAULT_DEM_CACHE = "/Users/w5nyv/TICKLE/data/dem_tiles"
 
 # ------------------------------------------------------------------ maidenhead
 def grid_to_box(g):
@@ -73,7 +74,7 @@ TILE_URL = "https://s3.amazonaws.com/elevation-tiles-prod/skadi/{ns}{lat:02d}/{n
 
 class Dem:
     """SRTM 1-arcsec tiles, lazily downloaded, memory-mapped."""
-    def __init__(self, cache="dem_tiles"):
+    def __init__(self, cache="DEFAULT_DEM_CACHE"):
         self.cache = cache
         os.makedirs(cache, exist_ok=True)
         self.tiles = {}
@@ -208,6 +209,7 @@ def main():
     ap.add_argument("--pairs", nargs="*",
                     help="near:far keys, e.g. delmar:parker (default: full matrix)")
     ap.add_argument("--list", action="store_true")
+    ap.add_argument("--dem-cache", default=DEFAULT_DEM_CACHE)
     a = ap.parse_args()
     if a.list:
         for k, s in SITES.items():
@@ -216,7 +218,7 @@ def main():
     pairs = ([tuple(p.split(":")) for p in a.pairs] if a.pairs else PAIRS)
 
     os.makedirs("step2_outputs", exist_ok=True)
-    dem = Dem()
+    dem = Dem(a.dem_cache)
     sites, profiles = {}, {}
     for key in sorted({k for p in pairs for k in p}):
         print(f"resolving site {key} ...")
