@@ -1,0 +1,13 @@
+pair                       path_km  best_floor_km  mirror@ (lat,lon)  dA_km  dB_km
+    delmar -> parker          306            2.0  (32.90,-116.45)     71    240
+    delmar -> phoenix         460            5.2  (33.10,-115.55)    156    304
+ sanmiguel -> parker          291            1.9  (32.60,-115.85)    102    207
+ sanmiguel -> phoenix         439            4.7  (32.95,-115.20)    164    274
+   palomar -> parker          266            1.9  (32.55,-115.90)    124    214
+   palomar -> phoenix         425            5.9  (32.80,-115.55)    136    310
+
+Reading the floor: a storm cell can act as the mirror where its
+top exceeds the floor. Typical monsoon cell tops (literature-
+typical values, not measured here): moderate ~10-12 km MSL,
+strong organized ~13-16 km MSL. Floors under ~8 km: routinely
+workable. 8-12 km: needs vigorous convection. >16 km: no.
