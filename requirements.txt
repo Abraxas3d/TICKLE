@@ -1,3 +1,9 @@
-numpy==2.5.3
-pillow==12.3.0
-scipy==1.18.1
+numpy
+scipy
+pillow
+pandas
+matplotlib
+jupyter
+arm-pyart
+boto3
+mistune==3.0.2  # newer mistune escapes block HTML in nbconvert exports (Sept 2026)
