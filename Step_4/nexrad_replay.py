@@ -140,6 +140,10 @@ def key_hour(key):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--date", required=True, help="YYYY-MM-DD (UTC)")
+    ap.add_argument("--pair", default="sanmiguel_parker",
+                    help="short pair name; goes into output filenames and CSV "
+                         "provenance columns. MUST match --siteA/--siteB/"
+                         "--floor-npz (e.g. delmar_parker)")
     ap.add_argument("--start", type=float, default=0, help="UTC hour")
     ap.add_argument("--end", type=float, default=24, help="UTC hour")
     ap.add_argument("--radars", nargs="+", default=["KYUX"])
@@ -173,7 +177,12 @@ def main():
                              else sorted(radar.fields)[0])
                 m = corridor_metrics(radar, A, B, floor=floor,
                                      refl_field=fieldname)
-                m.update(radar=radar_id, hour=key_hour(key), key=key)
+                m.update(radar=radar_id, hour=key_hour(key), key=key,
+                         pair=a.pair,
+                         siteA=f"{A[0]:.4f},{A[1]:.4f}",
+                         siteB=f"{B[0]:.4f},{B[1]:.4f}",
+                         floor_src=(os.path.basename(a.floor_npz)
+                                    if a.floor_npz else "flat_3-15km_proxy"))
                 rows.append(m)
                 print(f"  [{i+1}/{len(keys)}] {os.path.basename(key)}  "
                       f"max {m['max_dbz']:.0f} dBZ  "
@@ -188,7 +197,7 @@ def main():
 
     # ------------------------------------------------------------- outputs
     import csv as csvmod
-    csv_path = os.path.join(a.out, f"{a.date}_metrics.csv")
+    csv_path = os.path.join(a.out, f"{a.date}_{a.pair}_metrics.csv")
     with open(csv_path, "w", newline="") as f:
         w = csvmod.DictWriter(f, fieldnames=list(rows[0].keys()))
         w.writeheader(); w.writerows(rows)
@@ -234,11 +243,11 @@ def main():
     if qso_hours:
         ax.plot([], [], color="r", label="10 GHz QSO (any corridor pair)")
     ax.set_xlabel("UTC hour"); ax.set_ylabel("max reflectivity (dBZ)")
-    ax.set_title(f"{a.date}  corridor reflectivity vs 10 GHz activity\n"
+    ax.set_title(f"{a.date}  [{a.pair}]  corridor reflectivity vs 10 GHz activity\n"
                  f"A=({A[0]:.3f},{A[1]:.3f})  B=({B[0]:.3f},{B[1]:.3f})")
     ax.legend(); ax.grid(alpha=0.3)
     fig.tight_layout()
-    png = os.path.join(a.out, f"{a.date}_timeline.png")
+    png = os.path.join(a.out, f"{a.date}_{a.pair}_timeline.png")
     fig.savefig(png, dpi=130)
     print(f"\nwrote {csv_path} and {png}")
 
